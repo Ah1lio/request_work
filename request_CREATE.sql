@@ -1,41 +1,47 @@
---Задание 3
+create table if not exists Genre (
+id SERIAL primary key,
+title varchar(100) not null
+);
 
-select g.title, COUNT(ex.nickname)
-from genre as g 
-left join genre_executor as ge on g.id = ge.genre_id
-left join executor as ex on ge.executor_id = ex.id 
-group by g.title 
-order by count(ex.id) DESC 
+create table if not exists Executor ( 
+id SERIAL primary key,
+nickname varchar(100) not null
+);
 
-select al.year_of_release, count(s.title) 
-from album as al
-left join song as s on al.id=s.id
-where al.year_of_release < 2021 and al.year_of_release > 2018
-group by al.year_of_release
-order by count(s.id)
+create table if not exists Genre_Executor (
+genre_id INTEGER references Genre(id),
+executor_id INTEGER references Executor(id),
+constraint ge primary key (genre_id, executor_id)
+);
 
-select al.title, AVG(s.duration)
-from album as al
-left join song as s on al.id=s.id
-group by al.title 
-order by AVG(s.duration)
 
-select distinct ex.nickname
-from executor as ex
-where ex.nickname not in(
-select distinct ex.nickname
-from executor as ex
-left join executor_album as ex_al on ex.id = ex_al.executor_id
-left join album as al on al.id = ex_al.album_id
-where al.year_of_release = 2020
-)
-order by ex.nickname
+create table if not exists Album (
+id SERIAL primary key,
+title varchar(100) not null,
+year_of_release int
+);
 
-select cl.title 
-from collection as cl
-left join song_collection as s_cl on cl.id = s_cl.colletion_id 
-left join song as s on s_cl.song_id = s.id 
-left join album as al on s.id = al.id 
-left join executor_album as ex_al on al.id = ex_al.album_id 
-left join executor as ex on ex_al.executor_id = ex.id 
-where nickname like '%Davis%'
+create table if not exists Executor_Album (
+executor_id INTEGER references Executor(id),
+album_id INTEGER references Album(id),
+constraint exal primary key (executor_id, album_id)
+);
+
+create table if not exists Song (
+id SERIAL primary key,
+title varchar(100) not null,
+duration time,
+album_id INTEGER not null references Album(id)
+);
+
+create table if not exists Collection (
+id SERIAL primary key,
+title varchar(100) not null,
+year_of_release int
+);
+
+create table if not exists Song_Collection (
+song_id INTEGER references Song(id),
+colletion_id INTEGER references Collection(id),
+constraint sc primary key (song_id, colletion_id)
+);
